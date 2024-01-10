@@ -1,10 +1,13 @@
+# 引入函數庫
 import requests
 import os
 from time import sleep
 from bs4 import BeautifulSoup
 
+# 定義重整時間
 TIME = 3
 
+# 設定使用者代理，雖然在 小雞上工 中並未限制使用者代理
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 }
@@ -17,6 +20,8 @@ def readData():
             noEnterLine = line.splitlines()[0]
             existsList.append(noEnterLine)
     return existsList
+
+# 發送通知，其中 token 需換成自己的
 
 
 def notifyLine(message):
