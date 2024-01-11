@@ -56,8 +56,9 @@ if __name__ == "__main__":
                     continue
                 aTag = item.find("a")
                 if aTag.get('href') not in existsList:
-                    salary = aTag.find("span", {"class": "salary"}).text
-                    if salary < config['Setting']['minSalary']:
+                    salary = int(
+                        re.search(r'\d+', aTag.find("span", {"class": "salary"}).text).group())
+                    if salary < int(config['Setting']['minSalary']):
                         continue
                     title = aTag.get("title")
                     contact = aTag.find(
@@ -68,7 +69,8 @@ if __name__ == "__main__":
                             f"標題： {title} 價格： {aTag.find('span', {'class': 'salary'}).text} 聯絡人： {contact}")
                         notifyLine(
                             config['Setting']['token'], f"\n標題： {title}\n價格： {aTag.find('span', {'class': 'salary'}).text}\n聯絡人： {contact}")
-            sleep(int(config['Setting']['time']))
+            response.close()
+            sleep(float(config['Setting']['time']))
     except Exception as e:
         print(f"發生錯誤，錯誤資訊{e}")
         notifyLine(config['Setting']['token'], f"發生錯誤，請檢查程式。")
