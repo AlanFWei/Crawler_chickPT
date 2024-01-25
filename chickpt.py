@@ -42,35 +42,33 @@ if __name__ == "__main__":
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
 
+    os.system("cls")
+    print(f"小雞上工 監視中，目前是以每 {config['Setting']['time']} 秒檢查一次。")
     try:
-        os.system("cls")
-        print(f"小雞上工 監視中，目前是以每 {config['Setting']['time']} 秒檢查一次。")
         while True:
             existsList = readData()
-
             response = requests.get(url, headers=headers)
             soup = BeautifulSoup(response.text, "html.parser")
-
-            for item in soup.find("ul", {"id": "job-list"}):
-                if item.find("a") == -1:
+            for item in soup.find("ul", {"id": "job-list"}).find_all("li"):
+                href = item.find("a").get("href")
+                divTag = item.find("div", {"class": "is-blk"})
+                title = divTag.find("h2").text.strip()
+                contact = divTag.find(
+                    "p", {"class": "mobile-job-company"}).text.strip()
+                salary = int(
+                    re.search(r'\d+', divTag.find("span",
+                                                  {"class": "salary"}).text).group()
+                )
+                if salary < int(config['Setting']['minSalary']):
                     continue
-                aTag = item.find("a")
-                if aTag.get('href') not in existsList:
-                    salary = int(
-                        re.search(r'\d+', aTag.find("span", {"class": "salary"}).text).group())
-                    if salary < int(config['Setting']['minSalary']):
-                        continue
-                    title = aTag.get("title")
-                    contact = aTag.find(
-                        'p', {'class': 'ellipsis-job-company'}).text.strip()
+                if href not in existsList:
                     with open("chickpt.txt", 'a') as f:
-                        f.write(f"{aTag.get('href')}\n")
+                        f.write(f"{href}\n")
                         print(
-                            f"標題： {title} 價格： {aTag.find('span', {'class': 'salary'}).text} 聯絡人： {contact}")
+                            f"標題： {title} 價格： 單次{salary}元 聯絡人： {contact}")
                         notifyLine(
-                            config['Setting']['token'], f"\n標題： {title}\n價格： {aTag.find('span', {'class': 'salary'}).text}\n聯絡人： {contact}")
+                            config['Setting']['token'], f"\n標題： {title}\n價格： 單次{salary}元\n聯絡人： {contact}")
             response.close()
             sleep(float(config['Setting']['time']))
     except Exception as e:
-        print(f"發生錯誤，錯誤資訊{e}")
-        notifyLine(config['Setting']['token'], f"發生錯誤，請檢查程式。")
+        pass
